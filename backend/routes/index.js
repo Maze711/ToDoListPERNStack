@@ -10,13 +10,13 @@ app.get("/", (req, res) => {
 });
 
 // Test route to get data from a table
-app.get("/users", async (req, res) => {
+app.get("/tabledata", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM users");
-    console.log("/users endpoint result:", result.rows); // Log the table contents
+    const result = await pool.query("SELECT * FROM todoapp");
+    console.log("/tabledata endpoint result:", result.rows); // Log the table contents
     res.json(result.rows);
   } catch (err) {
-    console.error("/users endpoint error:", err.message);
+    console.error("/tabledata endpoint error:", err.message);
     res.status(500).send("Server Error");
   }
 });
