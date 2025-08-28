@@ -36,7 +36,7 @@ export const todoApi = {
     return response.json();
   },
 
-    // Complete todo
+  // Complete todo
   async completeTodo(id: number): Promise<Todo> {
     const response = await fetch(`${API_BASE_URL}/todos/${id}/complete`, {
       method: 'PATCH',
@@ -58,7 +58,17 @@ export const todoApi = {
     return response.json();
   },
 
-
+  // Archive todo
+  async archiveTodo(id: number): Promise<Todo> {
+    const response = await fetch(`${API_BASE_URL}/todos/${id}/archive`, {
+      method: 'PATCH',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to archive todo');
+    }
+    return response.json();
+  },
+  
   // Update todo
   async updateTodo(id: number, todo: UpdateTodoRequest): Promise<Todo> {
     const response = await fetch(`${API_BASE_URL}/todos/${id}`, {

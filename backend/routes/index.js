@@ -43,6 +43,19 @@ app.get("/todos", async (req, res) => {
   }
 });
 
+// GET ARCHIVED - Get all archived todos (MOVED HERE - BEFORE :id route)
+app.get("/todos/archived", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM todoapp WHERE archived_at IS NOT NULL ORDER BY archived_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("/todos/archived GET error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
 // READ - Get a single todo
 app.get("/todos/:id", async (req, res) => {
   try {
@@ -130,19 +143,6 @@ app.patch("/todos/:id/archive", async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 });
-
-// GET ARCHIVED - Get all archived todos
-app.get("/todos/archived", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM todoapp WHERE archived_at IS NOT NULL ORDER BY archived_at DESC"
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error("/todos/archived GET error:", err.message);
-    res.status(500).json({ error: "Server Error" });
-  }
-}); 
 
 // RESTORE - Restore a todo from archive
 app.patch("/todos/:id/restore", async (req, res) => {

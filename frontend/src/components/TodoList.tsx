@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, RefreshCw } from 'lucide-react';
-import { Todo } from '@/types/todo';
-import { todoApi } from '@/services/todoApi';
-import TodoForm from './TodoForm';
-import DeleteConfirmation from './DeleteConfirmation';
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, RefreshCw } from "lucide-react";
+import { Todo } from "@/types/todo";
+import { todoApi } from "@/services/todoApi";
+import TodoForm from "./TodoForm";
+import DeleteConfirmation from "./DeleteConfirmation";
 
 export default function TodoList() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -24,8 +24,8 @@ export default function TodoList() {
       const fetchedTodos = await todoApi.getAllTodos();
       setTodos(fetchedTodos);
     } catch (err) {
-      setError('Failed to load todos. Please try again.');
-      console.error('Error fetching todos:', err);
+      setError("Failed to load todos. Please try again.");
+      console.error("Error fetching todos:", err);
     } finally {
       setLoading(false);
     }
@@ -37,34 +37,40 @@ export default function TodoList() {
   }, []);
 
   // Create todo
-  const handleCreateTodo = async (data: { title: string; description: string }) => {
+  const handleCreateTodo = async (data: {
+    title: string;
+    description: string;
+  }) => {
     setIsSubmitting(true);
     try {
       const newTodo = await todoApi.createTodo(data);
-      setTodos(prev => [...prev, newTodo]);
+      setTodos((prev) => [...prev, newTodo]);
       setIsFormOpen(false);
     } catch (err) {
-      setError('Failed to create todo. Please try again.');
-      console.error('Error creating todo:', err);
+      setError("Failed to create todo. Please try again.");
+      console.error("Error creating todo:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Update todo
-  const handleUpdateTodo = async (data: { title: string; description: string }) => {
+  const handleUpdateTodo = async (data: {
+    title: string;
+    description: string;
+  }) => {
     if (!editingTodo) return;
-    
+
     setIsSubmitting(true);
     try {
       const updatedTodo = await todoApi.updateTodo(editingTodo.id, data);
-      setTodos(prev => prev.map(todo => 
-        todo.id === editingTodo.id ? updatedTodo : todo
-      ));
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === editingTodo.id ? updatedTodo : todo))
+      );
       setEditingTodo(null);
     } catch (err) {
-      setError('Failed to update todo. Please try again.');
-      console.error('Error updating todo:', err);
+      setError("Failed to update todo. Please try again.");
+      console.error("Error updating todo:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -73,15 +79,61 @@ export default function TodoList() {
   // Delete todo
   const handleDeleteTodo = async () => {
     if (!deletingTodo) return;
-    
+
     setIsSubmitting(true);
     try {
       await todoApi.deleteTodo(deletingTodo.id);
-      setTodos(prev => prev.filter(todo => todo.id !== deletingTodo.id));
+      setTodos((prev) => prev.filter((todo) => todo.id !== deletingTodo.id));
       setDeletingTodo(null);
     } catch (err) {
-      setError('Failed to delete todo. Please try again.');
-      console.error('Error deleting todo:', err);
+      setError("Failed to delete todo. Please try again.");
+      console.error("Error deleting todo:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Complete todo
+  const handleComplete = async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      const updatedTodo = await todoApi.completeTodo(id);
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === id ? updatedTodo : todo))
+      );
+    } catch (err) {
+      setError("Failed to complete todo. Please try again.");
+      console.error("Error completing todo:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Uncomplete todo
+  const handleUncomplete = async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      const updatedTodo = await todoApi.uncompleteTodo(id);
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === id ? updatedTodo : todo))
+      );
+    } catch (err) {
+      setError("Failed to uncomplete todo. Please try again.");
+      console.error("Error uncompleting todo:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Archive todo
+  const handleArchive = async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      await todoApi.archiveTodo(id);
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    } catch (err) {
+      setError("Failed to archive todo. Please try again.");
+      console.error("Error archiving todo:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,7 +175,7 @@ export default function TodoList() {
         {/* Actions */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-sm text-gray-500">
-            {todos.length} {todos.length === 1 ? 'todo' : 'todos'}
+            {todos.length} {todos.length === 1 ? "todo" : "todos"}
           </div>
           <div className="flex space-x-2">
             <button
@@ -150,8 +202,12 @@ export default function TodoList() {
               <div className="text-gray-400 mb-4">
                 <Plus className="h-12 w-12 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No todos yet</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first todo.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No todos yet
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Get started by creating your first todo.
+              </p>
               <button
                 onClick={() => setIsFormOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -176,6 +232,39 @@ export default function TodoList() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
+                    {/* Complete Button */}
+                    <button
+                      onClick={() =>
+                        todo.completed
+                          ? handleUncomplete(todo.id)
+                          : handleComplete(todo.id)
+                      }
+                      className={`p-2 rounded-lg transition-colors ${
+                        todo.completed
+                          ? "text-green-600 bg-green-50 hover:bg-green-100"
+                          : "text-gray-400 hover:text-green-500 hover:bg-green-50"
+                      }`}
+                      title={
+                        todo.completed
+                          ? "Mark as incomplete"
+                          : "Mark as complete"
+                      }
+                    >
+                      {todo.completed ? "✓" : "○"}
+                    </button>
+
+                    {/* Archive Button (only for completed todos) */}
+                    {todo.completed && (
+                      <button
+                        onClick={() => handleArchive(todo.id)}
+                        className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                        title="Archive todo"
+                      >
+                        📁
+                      </button>
+                    )}
+
+                    {/* Edit Button */}
                     <button
                       onClick={() => setEditingTodo(todo)}
                       className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
@@ -183,6 +272,8 @@ export default function TodoList() {
                     >
                       <Edit className="h-4 w-4" />
                     </button>
+
+                    {/* Delete Button */}
                     <button
                       onClick={() => setDeletingTodo(todo)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
