@@ -36,6 +36,29 @@ export const todoApi = {
     return response.json();
   },
 
+    // Complete todo
+  async completeTodo(id: number): Promise<Todo> {
+    const response = await fetch(`${API_BASE_URL}/todos/${id}/complete`, {
+      method: 'PATCH',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to complete todo');
+    }
+    return response.json();
+  },
+
+  // Uncomplete todo
+  async uncompleteTodo(id: number): Promise<Todo> {
+    const response = await fetch(`${API_BASE_URL}/todos/${id}/uncomplete`, {
+      method: 'PATCH',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to uncomplete todo');
+    }
+    return response.json();
+  },
+
+
   // Update todo
   async updateTodo(id: number, todo: UpdateTodoRequest): Promise<Todo> {
     const response = await fetch(`${API_BASE_URL}/todos/${id}`, {

@@ -34,7 +34,7 @@ app.post("/todos", async (req, res) => {
 // READ - Get all todos
 app.get("/todos", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM todoapp ORDER BY id");
+    const result = await pool.query("SELECT * FROM todoapp WHERE archived_at IS NULL ORDER BY id");
     console.log("/todos endpoint result:", result.rows);
     res.json(result.rows);
   } catch (err) {
@@ -73,6 +73,91 @@ app.put("/todos/:id", async (req, res) => {
     res.json(updateTodo.rows[0]);
   } catch (err) {
     console.error("/todos/:id PUT error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+// COMPLETE - Mark a todo as completed
+app.patch("/todos/:id/complete", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateTodo = await pool.query(
+      "UPDATE todoapp SET completed = true, completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND archived_at IS NULL RETURNING *",
+      [id]
+    );
+    if (updateTodo.rows.length === 0) {
+      return res.status(404).json({ error: "Todo not found" });
+    }
+    res.json(updateTodo.rows[0]);
+  } catch (err) {
+    console.error("/todos/:id/complete PATCH error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+// UNCOMPLETE - Mark a todo as not completed
+app.patch("/todos/:id/uncomplete", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateTodo = await pool.query(
+      "UPDATE todoapp SET completed = false, completed_at = NULL WHERE id = $1 AND archived_at IS NULL RETURNING *",
+      [id]
+    );
+    if (updateTodo.rows.length === 0) {
+      return res.status(404).json({ error: "Todo not found" });
+    }
+    res.json(updateTodo.rows[0]);
+  } catch (err) {
+    console.error("/todos/:id/uncomplete PATCH error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+// ARCHIVE - Move a todo to archive
+app.patch("/todos/:id/archive", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateTodo = await pool.query(
+      "UPDATE todoapp SET archived_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (updateTodo.rows.length === 0) {
+      return res.status(404).json({ error: "Todo not found" });
+    }
+    res.json(updateTodo.rows[0]);
+  } catch (err) {
+    console.error("/todos/:id/archive PATCH error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+// GET ARCHIVED - Get all archived todos
+app.get("/todos/archived", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM todoapp WHERE archived_at IS NOT NULL ORDER BY archived_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("/todos/archived GET error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+}); 
+
+// RESTORE - Restore a todo from archive
+app.patch("/todos/:id/restore", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateTodo = await pool.query(
+      "UPDATE todoapp SET archived_at = NULL WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (updateTodo.rows.length === 0) {
+      return res.status(404).json({ error: "Todo not found" });
+    }
+    res.json(updateTodo.rows[0]);
+  } catch (err) {
+    console.error("/todos/:id/restore PATCH error:", err.message);
     res.status(500).json({ error: "Server Error" });
   }
 });
